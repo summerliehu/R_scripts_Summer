@@ -1,14 +1,14 @@
 #需要在R中复制粘贴运行
 #编辑以下进行配置
 gene1="MAP2K7";
-gene2="TET2";
+gene2="TET1";
 #----------------------
 library(cgdsr);
 mycgds = CGDS("http://www.cbioportal.org/");
 #test(mycgds);
 getCancerStudies(mycgds);
 #----------------------
-cancerstudyID=36;
+cancerstudyID=97;
 mycancerstudy = getCancerStudies(mycgds)[cancerstudyID,1];
 mycaselist = getCaseLists(mycgds, mycancerstudy)[,1];
 mycaselist;
@@ -22,8 +22,8 @@ mygeneticprofile;
 
 #HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH下面的代码为 突变-表达 关系，做出箱图的代码HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH
 #选择数据类型
-type1ID=1;
-type2ID=4;
+type1ID=5;
+type2ID=11;
 mutationprofile = getGeneticProfiles(mycgds, mycancerstudy)[type1ID,1];
 mutation <- getProfileData(mycgds, c(gene1,gene2), mutationprofile,mycaselist);
 rnaprofile=getGeneticProfiles(mycgds, mycancerstudy)[type2ID,1];
@@ -39,39 +39,64 @@ mutation_rna <- read.csv("/Users/xiayukun/Desktop/mutation_rna.csv");
 #----------------------
 #画图
 library(ggplot2)
-qplot(x=MAP2K7, y=TET2.1, data=mutation_rna, fill=MAP2K7, geom=c("boxplot"),
-	 xlab="KRAS mutation type", ylab="TET2 mRNA level",main="Effect of MAP2K7 mutation on mRNA level of TET2 in coadread_tcga_pub");
+qplot(x=MAP2K7, y=TET1.1, data=mutation_rna, fill=MAP2K7, geom=c("boxplot"),
+	 xlab="KRAS mutation type", ylab="TET1 mRNA level",main="Effect of MAP2K7 mutation on mRNA level of TET1 in coadread_tcga_pub");
 #----------------------
 #计算p-value
-t.test(TET2.1 ~ MAP2K7, mutation_rna)
+t.test(TET1.1 ~ MAP2K7, mutation_rna)
 #将p-value添加到图中
-qplot(x=MAP2K7, y=TET2.1, data=mutation_rna, fill=MAP2K7, geom=c("boxplot", "jitter"), xlab="MAP2K7 mutation type", 
-	ylab="TET2 mRNA level",main="MAP2K7 mutation regulates TET2 RNA in coadread_tcga_pub")+
+qplot(x=MAP2K7, y=TET1.1, data=mutation_rna, fill=MAP2K7, geom=c("boxplot", "jitter"), xlab="MAP2K7 mutation type", 
+	ylab="TET1 mRNA level",main="MAP2K7 mutation regulates TET1 RNA in coadread_tcga_pub")+
 	annotate("text",x =1.5 , y = 10, label = "p-value: 0.50", size=5)
 
 #HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH
 
 #HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH下面的代码为 表达-表达 关系，做出点图的代码HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH
 #选择数据类型
-type1ID=4;
-type2ID=4;
+type1ID=3;
 rnaprofile1 = getGeneticProfiles(mycgds, mycancerstudy)[type1ID,1];
-rna1 <- getProfileData(mycgds, c(gene1,gene2), mutationprofile,mycaselist);
-rnaprofile2=getGeneticProfiles(mycgds, mycancerstudy)[type2ID,1];
-rna2=getProfileData(mycgds, c(gene1,gene2), rnaprofile,mycaselist);
-rna1_rna2 <- cbind(rna1, rna2);
-rna1_rna2;
+rna1 <- getProfileData(mycgds, c(gene1,gene2), rnaprofile1,mycaselist);
 #输出为csv
-write.csv(rna1_rna2, file = "/Users/xiayukun/Desktop/mutation_rna.csv");
+write.csv(rna1, file = "/Users/xiayukun/Desktop/mutation_rna.csv");
 #------------------------------------------------------------------------------------------
 #清洗csv数据
-rna1_rna2 <- read.csv("/Users/xiayukun/Desktop/mutation_rna.csv");
+rna1 <- read.csv("/Users/xiayukun/Desktop/mutation_rna.csv");
 #mutation_rna;
 #----------------------
 #画图
 library(ggplot2)
-qplot(x=MAP2K7, y=TET2, data=rna1_rna2, 
-	main="correlation betewwn MAP2K7 and TET2 expression", 
-	xlab="MAP2K7 expression", ylab="TET2 expression")+ geom_smooth(method = "lm", se = FALSE)
+qplot(x=MAP2K7, y=TET1, data=rna1, 
+	main="Correlation betewwn MAP2K7 and TET1 expression in NEPC", 
+	xlab="MAP2K7 expression", ylab="TET1 expression")+ geom_smooth(method = "lm", se = FALSE)
 
 #HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH
+#下面代码使用ggplot作出带有回归方程的两个基因表达关系的图：
+type1ID=3;
+rnaprofile1 = getGeneticProfiles(mycgds, mycancerstudy)[type1ID,1];
+rna1 <- getProfileData(mycgds, c(gene1,gene2), rnaprofile1,mycaselist);
+#输出为csv
+#write.csv(rna1, file = "/Users/xiayukun/Desktop/mutation_rna.csv");
+#清洗csv数据
+#rna1 <- read.csv("/Users/xiayukun/Desktop/mutation_rna.csv");
+
+library(gridExtra);
+
+lm_eqn = function(m) {
+
+  l <- list(a = format(coef(m)[1], digits = 2),
+      b = format(abs(coef(m)[2]), digits = 2),
+      r2 = format(summary(m)$r.squared, digits = 3));
+
+  if (coef(m)[2] >= 0)  {
+    eq <- substitute(italic(y) == a + b %.% italic(x)*","~~italic(r)^2~"="~r2,l)
+  } else {
+    eq <- substitute(italic(y) == a - b %.% italic(x)*","~~italic(r)^2~"="~r2,l)    
+  }
+
+  as.character(as.expression(eq));                 
+}
+
+p <- ggplot(rna1, aes(MAP2K7, TET1)) + geom_point() + 
+geom_smooth(method="lm", colour="darkblue", size=1) +
+geom_text(aes(x = 100, y = 3, label = lm_eqn(lm(TET1 ~ MAP2K7, rna1))), parse = TRUE)+
+labs(x="MAP2K7 expression",y="TET1 expression",title = "Correlation of MAP2K7 and TET1 mRNA in GBM(TCGA)");
