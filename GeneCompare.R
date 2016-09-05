@@ -55,7 +55,7 @@ qplot(x=DNMT1, y=MAP2K7.1, data=mutation_rna, fill=DNMT1, geom=c("boxplot", "jit
 
 #HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH下面的代码为 表达-表达 关系，做出点图的代码HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH
 #选择数据类型
-type1ID=4;
+type1ID=5;
 rnaprofile1 = getGeneticProfiles(mycgds, mycancerstudy)[type1ID,1];
 rna1 <- getProfileData(mycgds, c(gene1,gene2), rnaprofile1,mycaselist);
 #输出为csv
