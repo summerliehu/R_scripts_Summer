@@ -7,7 +7,7 @@ data=na.omit(methylation)
 library('gplots')
 heatmap.2(as.matrix(methylation[,-1]), col=redgreen)
 
-
+#-----------------
 
 # from LP
 # HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH
